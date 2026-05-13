@@ -64,18 +64,18 @@ export default function App() {
 
     try {
       // PROD CONFIG: Using secure SSL to a stable Signet Node
-      const client = await new ElectrumClient('ssl://signet-electrum.kuutamo.cloud:50002');
+      const client = new ElectrumClient('ssl://mempool.space:60602');
 
       setLog("Building Request...");
-      const fullScanRequest = await walletRef.current.startFullScan().build();
+      const fullScanRequest = walletRef.current.startFullScan().build();
 
       setLog("Downloading headers...");
-      const update = await client.fullScan(fullScanRequest);
+      const update = client.fullScan(fullScanRequest, BigInt(20), BigInt(20), false);
 
       setLog("Applying to Wallet...");
-      await walletRef.current.applyUpdate(update);
+      walletRef.current.applyUpdate(update);
 
-      const balanceInfo = await walletRef.current.balance(); 
+      const balanceInfo = walletRef.current.balance();
       setBalance(balanceInfo);
       
       setLog("Sync Complete!");
@@ -119,12 +119,12 @@ export default function App() {
         <View style={[styles.card, styles.balanceCard]}>
           <Text style={styles.label}>Confirmed Balance:</Text>
           <Text style={styles.bigBalance}>
-            {balance ? balance.confirmed : 0} <Text style={styles.sats}>sats</Text>
+            {balance ? balance.confirmed.toSat().toString() : 0} <Text style={styles.sats}>sats</Text>
           </Text>
 
           <Text style={styles.label}>Unconfirmed / Pending:</Text>
           <Text style={styles.smallBalance}>
-            {balance ? (balance.trusted_pending + balance.untrusted_pending) : 0} sats
+            {balance ? (balance.trustedPending.toSat() + balance.untrustedPending.toSat()).toString() : 0} sats
           </Text>
         </View>
 
